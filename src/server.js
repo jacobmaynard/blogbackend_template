@@ -1,17 +1,22 @@
 import express from 'express';
-import boddyParser from 'body-parser';
+import bodyParser from 'body-parser';
 import path from 'path';
+import cors from "cors";
 
 const { MongoClient } = require( 'mongodb');
 const app = express();
 
-app.use(boddyParser.json());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(cors());
+
 app.use(express.static(path.join(__dirname, '/build')))
 
 const withDB = async (operations, res) => {
     try {
         const client = await MongoClient.connect("mongodb://localhost:27017", {
-            useNewUrlParser: true
+            useNewUrlParser: true,
+            useUnifiedTopology: true
         });
         const db = client.db('my-blog');
 
