@@ -4,11 +4,24 @@ import path from 'path';
 import cors from "cors";
 
 const { MongoClient } = require( 'mongodb');
+
+const https = require('https'),
+      http = require('http'),
+      fs = require("fs"),
+      helmet=require("helmet");
+
+const ssl_options={
+    key: fs.readFileSync(path.join(__dirname, '/certstore/keys/server.key')),
+    cert: fs.readFileSync(path.join(__dirname, '/certstore/certs/server.pem')),
+    dhparam: fs.readFileSync(path.join(__dirname, '/certstore/params/dh-strong.pem'))
+};
+
 const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cors());
+app.use(helmet());
 
 app.use(express.static(path.join(__dirname, '/build')))
 
@@ -74,4 +87,8 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname + '/build/index.html'));
 })
 
-app.listen(8000, () => console.log("Listening on port 8000"));
+http.createServer(app).listen(8000, () => {
+    console.log("Listending on port %d", 8000)
+});
+
+https.createServer(ssl_options, app).listen(4443);
